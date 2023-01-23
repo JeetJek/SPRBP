@@ -131,11 +131,101 @@ namespace Zadacha1
                             //CODEPART 3.3 Редактирование подрисуночной подписи
                             case 1://"[*номер рисунка*]"
                                 {
+                                    //так как у подрисуночной подписи еще нужно вставить подпись Рисунок
+                                    //ищем шаблонную строку в выделении
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+
+                                    //переводим курсор в начало шаблонной строки
+                                    Microsoft.Office.Interop.Word.Range range = application.Selection.Range;
+                                    range.Start = application.Selection.Range.Start;
+                                    range.End = application.Selection.Range.Start;
+                                    range.Select();
+
+                                    //вставляем текст
+                                    application.Selection.Text = "Рисунок" + '\u00A0';
+
+                                    //снова ищем шаблонную строку
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+
+                                    //переносим курсор в конец шаблонной строки
+                                    range = application.Selection.Range;
+                                    range.Start = application.Selection.Range.End;
+                                    range.End = application.Selection.Range.End;
+                                    range.Select();
+
+                                    //вставляем тире
+                                    application.Selection.Text = " –";
+
+                                    //снова ищем шаблонную строку, чтобы вставить закладку
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+                                    document.Bookmarks.Add("_numberPicture" + ++_pictureBookMark, application.Selection.Range);
+
+                                    //форматируем абзац
+                                    paragraph.Alignment = WdParagraphAlignment.wdAlignParagraphCenter;
+                                    paragraph.Range.Font.Name = "Times New Roman";
+                                    paragraph.Range.Font.Size = 12;
+                                    paragraph.Format.SpaceAfter = 12;
+                                    paragraph.Range.HighlightColorIndex = 0;
+
+                                    //так как это подрисуночная подпись, рисунок тоже нужно выравнять по ширине 
+                                    if (prevParagraph != null)
+                                    {
+                                        //а рисунок на предыдущем абзаце
+                                        //форматируем
+                                        prevParagraph.Format.SpaceBefore = 12;
+                                        prevParagraph.Alignment = WdParagraphAlignment.wdAlignParagraphCenter;
+                                    }
+
+                                    isStandartFormat = false;//дальнейшее форматирование не нужно
                                 }
                                 break;
                             //CODEPART 3.4 Редактирование заголовка таблицы
                             case 2://"[*номер таблицы*]"
                                 {
+                                    //так как у надтабличной подписи еще нужно вставить подпись Таблица
+                                    //ищем шаблонную строку в выделении
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+
+                                    //переводим курсор в начало шаблонной строки
+                                    Microsoft.Office.Interop.Word.Range range = application.Selection.Range;
+                                    range.Start = application.Selection.Range.Start;
+                                    range.End = application.Selection.Range.Start;
+                                    range.Select();
+
+                                    //вставляем текст
+                                    application.Selection.Text = "Таблица" + '\u00A0';
+
+                                    //снова ищем шаблонную строку
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+
+                                    //переносим курсор в конец шаблонной строки
+                                    range = application.Selection.Range;
+                                    range.Start = application.Selection.Range.End;
+                                    range.End = application.Selection.Range.End;
+                                    range.Select();
+
+                                    //вставляем тире
+                                    application.Selection.Text = " –";
+
+                                    //снова ищем шаблонную строку, чтобы вставить закладку
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+                                    application.Selection.Range.Bookmarks.Add("_numberTable" + ++_tableBookMark, application.Selection.Range);
+
+                                    //форматируем абзац
+                                    paragraph.Alignment = WdParagraphAlignment.wdAlignParagraphLeft;
+                                    paragraph.Range.Font.Name = "Times New Roman";
+                                    paragraph.Range.Font.Size = 12;
+                                    paragraph.Format.SpaceBefore = 12;
+                                    paragraph.Format.SpaceAfter = 0;
+                                    paragraph.Range.HighlightColorIndex = 0;
+
+                                    isStandartFormat = false;//дальнейшее форматирование не нужно
                                 }
                                 break;
 
@@ -152,11 +242,22 @@ namespace Zadacha1
                             //CODEPART 3.6 Вставка закладки списка литературы
                             case 7://"[*cписок литературы*]"
                                 {
+                                    //если есть шаблонная строка для места вставки списка литературы
+                                    //заменяем закладкой
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+                                    document.Bookmarks.Add("_literature", application.Selection.Range);
                                 }
                                 break;
                             //CODEPART 3.7 Вставка кода из файла
                             case 8://"[*код"
                                 {
+                                    //если есть шаблонная строка для места вставки кода
+                                    //заменяем закладкой
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+                                    document.Bookmarks.Add("_code" + ++_codeBookMark, application.Selection.Range);
+                                    //TODO (задание на 5) вставить код из файла - CourierNew 8 пт одинарный без отступа в рамке
                                 }
                                 break;
                         }
