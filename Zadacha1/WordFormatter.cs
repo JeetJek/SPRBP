@@ -63,8 +63,6 @@ namespace Zadacha1
         List<string> sourceList = new List<string>();
         /// <summary>пустая ссылка для передачи пустого параметра в COM-объект</summary>
         Object missing = System.Type.Missing;
-
-
         public void Make()
         {
             //открытие приложения Word
