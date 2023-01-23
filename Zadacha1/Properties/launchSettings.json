@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Zadacha1": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\1\\шаблон.rtf\"\r\n\"D:\\1\\результат.rtf\""
+    }
+  }
+}
