@@ -178,7 +178,31 @@ namespace Zadacha1
                                         prevParagraph.Format.SpaceBefore = 12;
                                         prevParagraph.Alignment = WdParagraphAlignment.wdAlignParagraphCenter;
                                     }
+                                    bool isNotEnd = true;
+                                    do
+                                    {
+                                        //выделим весь документ до этого рисунка
+                                        range = paragraph.Range;
+                                        range.Start = 0;
+                                        range.Select();
+                                        //если есть данная шаблонная строка
+                                        application.Selection.Find.Execute("[*ссылка на следующий рисунок*]");
 
+                                        //и она находится перед рисунком
+                                        if (application.Selection.End < paragraph.Range.Start)
+                                        {
+                                            //делаем перекрестную ссылку на номер этого рисунка: ссылка на текст закладки
+                                            //(2- закладка,wdContentText - текст, true - гиперссылка)
+                                            application.Selection.Range.InsertCrossReference(2,
+                                                WdReferenceKind.wdContentText, "_numberPicture" + _pictureBookMark, true);
+                                        }
+                                        else
+                                        {
+                                            //если же мы движемся дальше подрисуночной подписи
+                                            isNotEnd = false;
+                                        }
+                                    }//перестаем искать шаблонные строки
+                                    while (isNotEnd);
                                     isStandartFormat = false;//дальнейшее форматирование не нужно
                                 }
                                 break;
@@ -224,7 +248,31 @@ namespace Zadacha1
                                     paragraph.Format.SpaceBefore = 12;
                                     paragraph.Format.SpaceAfter = 0;
                                     paragraph.Range.HighlightColorIndex = 0;
+                                    bool isNotEnd = true;
+                                    do
+                                    {
+                                        //выделим весь документ до этого заголовка таблицы
+                                        range = paragraph.Range;
+                                        range.Start = 0;
+                                        range.Select();
 
+                                        //если есть данная шаблонная строка
+                                        application.Selection.Find.Execute("[*ссылка на таблицу*]");
+
+                                        //и она находится перед таблицей
+                                        if (application.Selection.End < paragraph.Range.Start)
+                                        {
+                                            //делаем перекрестную ссылку на номер этой таблицы: ссылка на текст закладки
+                                            application.Selection.Range.InsertCrossReference(2,
+                                                WdReferenceKind.wdContentText, "_numberTable" + _tableBookMark, true);
+                                        }
+                                        else
+                                        {
+                                            //если же мы движемся дальше заголовка таблицы
+                                            isNotEnd = false;
+                                        }
+                                    }//перестаем искать шаблонные строки
+                                    while (isNotEnd);
                                     isStandartFormat = false;//дальнейшее форматирование не нужно
                                 }
                                 break;
@@ -232,6 +280,11 @@ namespace Zadacha1
                             //CODEPART 3.5 Вставка перекрестной ссылки на предыдущий рисунок
                             case 4://"[*ссылка на предыдущий рисунок*]"
                                 {
+                                    //закладка на предыдущий рисунок уже определена,
+                                    //поэтому мы можем сразу сделать перекрестную ссылку
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+                                    application.Selection.Range.InsertCrossReference(2, WdReferenceKind.wdContentText, "_numberPicture" + _pictureBookMark, true);
                                 }
                                 break;
                             //CODEPART 3.5 Вставка таблицы из файла
