@@ -112,6 +112,20 @@ namespace Zadacha1
                             //CODEPART 3.2 Редактирование абзаца заголовка раздела
                             case 0:// "[*номер раздела*]"
                                 {
+                                    //выделяем параграф, ищем поиском шаблонную строку, вставляем закладку
+                                    paragraph.Range.Select();
+                                    application.Selection.Find.Execute(templateStringList[i]);
+                                    application.Selection.Range.Bookmarks.Add("_numberSection" + ++_sectionBookmark, application.Selection.Range);
+
+                                    //форматируем абзац
+                                    paragraph.Alignment = WdParagraphAlignment.wdAlignParagraphCenter;
+                                    paragraph.Range.Font.Name = "Times New Roman";
+                                    paragraph.Range.Font.Size = 15;
+                                    paragraph.Format.SpaceAfter = 12;
+                                    paragraph.Range.Font.Bold = 1;
+                                    paragraph.Range.HighlightColorIndex = 0;
+
+                                    isStandartFormat = false;//дальнейшее форматирование не нужно
                                 }
                                 break;
                             //CODEPART 3.3 Редактирование подрисуночной подписи
@@ -155,6 +169,17 @@ namespace Zadacha1
                 //если нужно абзац форматировать как обычный текст
                 if (isStandartFormat)
                 {
+                    //то форматируем основной текст
+                    paragraph.Alignment = WdParagraphAlignment.wdAlignParagraphJustify;
+                    paragraph.Range.Font.Name = "Times New Roman";
+                    paragraph.Range.Font.Size = 14;
+                    paragraph.Format.SpaceAfter = 0;
+                    paragraph.Format.SpaceBefore = 0;
+                    paragraph.Range.Font.Bold = 0;
+                    paragraph.Range.HighlightColorIndex = 0;
+
+                    paragraph.Format.LineSpacingRule = WdLineSpacing.wdLineSpace1pt5;
+                    paragraph.Format.CharacterUnitFirstLineIndent = 1.5f;
                 }
 
                 //фиксируем ссылку на текущий абзац
@@ -177,7 +202,7 @@ namespace Zadacha1
 
             //сохраняем документ
             document.SaveAs2(distPath);
-            //application.Quit();
+            application.Quit();
 
         }
     }
