@@ -95,10 +95,29 @@ namespace Zadacha1
             document.Bookmarks.ShowHidden = true;
             //и устанавливаем их сортировку по их порядку в документе
             document.Bookmarks.DefaultSorting = WdBookmarkSortBy.wdSortByLocation;
-
             //обходим все закладки в документе
             foreach (Bookmark bookmark in document.Bookmarks)
             {
+                //если они начинаются с определенного префикса
+                for (int j = 0; j < listBookMarkes.Length; j++)
+                {
+                    if (bookmark.Name.StartsWith(listBookMarkes[j]))
+                    {
+                        //то указываем с помощью текущего номера закладки, переопределяем максимальный номер
+                        switch (j)
+                        {
+                            case 0:
+                                _sectionBookmark = Math.Max(_sectionBookmark,
+                            int.Parse(bookmark.Name.Replace(listBookMarkes[j], ""))); break;
+                            case 1:
+                                _pictureBookMark = Math.Max(_pictureBookMark,
+                            int.Parse(bookmark.Name.Replace(listBookMarkes[j], ""))); break;
+                            case 2:
+                                _tableBookMark = Math.Max(_tableBookMark,
+                            int.Parse(bookmark.Name.Replace(listBookMarkes[j], ""))); break;
+                        }
+                    }
+                }
                 //этот цикл нам нужен, чтобы не перезаписывать уже определенные закладки
             }
 
@@ -541,7 +560,66 @@ namespace Zadacha1
             //снова обходим все параграфы
             foreach (Paragraph paragraph in document.Paragraphs)
             {
+                //внутри параграфа обходим все закладки
+                foreach (Bookmark bookmark in paragraph.Range.Bookmarks)
+                {
+                    //если нашли нужную закладку с номером
+                    for (int j = 0; j < listBookMarkes.Length; j++)
+                    {
+                        if (bookmark.Name.StartsWith(listBookMarkes[j]))
+                        {
+                            string replaceString = "";
+                            //определяем номер
+                            switch (j)
+                            {
+                                case 0://раздела
+                                    {
+                                        _sectionNumber++;
+                                        _pictureNumber = 0;//рисунки у нас нумеруются внутри раздела
+                                        _tableNumber = 0; //как и таблицы
+                                        replaceString = _sectionNumber.ToString();
+                                        //TODO (задание на 5) дополните код и шаблон, чтобы велась нумерация подразделов, пунктов, подпунктов со своим форматированием
+                                        //1 раздел
+                                        //1.1 подраздел
+                                        //1.1.1 пункт
+                                        //1.1.1.1 подпункт
+                                    }
+                                    break;
+                                case 1://картинки
+                                    {
+                                        _pictureNumber++;
+                                        //номер картинки состоит из номера раздела и номера картики
+                                        replaceString = _sectionNumber.ToString()
+                                        + "." + _pictureNumber.ToString();
+                                    }
+                                    break;
+                                case 2://номер таблицы
+                                    {
+                                        _tableNumber++;
+                                        //номер картинки состоит из номера раздела и номера таблицы
+                                        replaceString = _sectionNumber.ToString()
+                                        + "." + _tableNumber.ToString();
+                                    }
+                                    break;
+                            }
+                            if (replaceString != "")
+                            {
+                                //вставляем номер в текст закладки
+                                string bookMarkName = bookmark.Name;
+                                Microsoft.Office.Interop.Word.Range range = bookmark.Range;
+                                bookmark.Range.Text = replaceString;
+                                //так как закладка после изменения текста затирается
+                                //создаем ее заново, но в новом диапазоне
+                                range.End = range.Start + replaceString.Length;
+                                document.Bookmarks.Add(bookMarkName, range);
+                            }
+                        }
+                    }
+                }
             }
+            //обновляем все поля, чтобы перекрестные ссылки забрали текст закладок
+            document.Fields.Update();
+            //TODO (задание на 4) удалить из документа двойные пробелы (кроме кода), перед [ неразрывный пробел
 
 
             //обновляем все поля, чтобы перекрестные ссылки забрали текст закладок
