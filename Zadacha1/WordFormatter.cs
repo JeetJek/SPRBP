@@ -96,7 +96,35 @@ namespace Zadacha1
             foreach (Paragraph paragraph in document.Paragraphs)
             {
                 //CODEPART 3.1 Исключение абзацев, которые не нужно трогать
-
+                if (paragraph.Range.Tables.Count != 0 || paragraph.Range.InlineShapes.Count != 0)
+                {
+                    //то нам форматироваться и трогать этот параграф запрещено
+                    prevParagraph = paragraph;
+                    //переходим на следующий параграф
+                    continue;
+                }
+                //также проверим, что в абзаце есть уже установленная закладка, которая указывает,
+                //что этот параграф мы обработали на предыдущих запусках приложения
+                bool hasSetBookMark = false;
+                foreach (Bookmark bookmark in paragraph.Range.Bookmarks)
+                {
+                    for (int j = 0; j < listBookMarkes.Length; j++)
+                    {
+                        //если закладка с нужным префиксом есть
+                        if (bookmark.Name.StartsWith(listBookMarkes[j]))
+                        {
+                            //помечаем, что этот параграф трогать не нужно
+                            hasSetBookMark = true;
+                            //TODO (задание на 4) вставить соответствующее форматирование нужного абзаца
+                            break;
+                        }
+                    }
+                }
+                //если закладка уже установлена, игнорируем дальнейшее форматирование этого параграфа
+                if (hasSetBookMark)
+                {
+                    continue;
+                }
                 //флаг, для того, чтобы определять, нужно ли применять форматирование
                 //к параграфу, как к основному тексту
                 bool isStandartFormat = true;
@@ -290,6 +318,43 @@ namespace Zadacha1
                             //CODEPART 3.5 Вставка таблицы из файла
                             case 6://"[*таблица "
                                 {
+                                //по формату мы задаем, что у нас есть шаблоная строка
+                                //[*таблица XXXXX*] где XXXXX - имя файла csv с таблицей
+                                //поэтому эту строку мы должны извлечь
+                                //при этому убираем ненужные части шаблонной строки
+                                string csvPath = paragraph.Range.Text.Replace(templateStringList[i], "")
+                                .Replace("*", "")
+                                .Replace("\r", "")
+                                .Replace("]", "");
+                                //файл должен лежать рядом с исходным документом
+                                //поэтому определим полный путь (извлекаем путь до директории текущего документа)
+                                csvPath = new System.IO.FileInfo(sourcePath).DirectoryName + "\\" + csvPath;
+                                //выделяем место вставки таблицы, сразу убираем желтое выделение
+                                var range = paragraph.Range;
+                                paragraph.Range.HighlightColorIndex = 0;
+                                //считываем все строки из csv файла - строки таблицы
+                                string[] listRows = System.IO.File.ReadAllLines(csvPath, Encoding.UTF8);
+                                //по разделителю разделяем строку таблицы на ячейки
+                                string[] listTitle = listRows[0].Split(";,".ToCharArray(),
+                                StringSplitOptions.RemoveEmptyEntries);
+                                //теперь у нас есть количество строк и столбцов, поэтому в текущую позицию вставляем таблицу
+                                var wordTable = document.Tables.Add(range, listRows.Length, listTitle.Length);
+                                //вставляем заголовки таблицы
+                                for (var k = 0; k < listTitle.Length; k++)
+                                {
+                                        wordTable.Cell(1, k + 1).Range.Text = listTitle[k].ToString();
+                                }
+                                //вставляем содержимое таблицы
+                                for (var j = 1; j < listRows.Length; j++)
+                                {
+                                    string[] listValues = listRows[j].Split(";,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                                        for (var k = 0; k < listValues.Length; k++)
+                                        {
+                                            wordTable.Cell(j + 1, k + 1).Range.Text = listValues[k].ToString();
+                                        }
+                                    }
+                                    isStandartFormat = false;//дальнейшее форматирование не нужно
+                                    //TODO (задание на 4) применить свое форматирование к таблице: границы, шрифт, цвет шрифта и заливки
                                 }
                                 break;
                             //CODEPART 3.6 Вставка закладки списка литературы

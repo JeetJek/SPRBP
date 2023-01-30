@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="список студентов.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="шаблон.rtf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
