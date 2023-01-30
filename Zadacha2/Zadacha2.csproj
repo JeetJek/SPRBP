@@ -55,5 +55,10 @@
       <Version>5.5.13.3</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="шаблон.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

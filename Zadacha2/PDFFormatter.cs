@@ -20,9 +20,9 @@ namespace Zadacha2
         /// <summary>нумерация источников в списке литературы</summary>
         int _sourceNumber = 0;
         /// <summary>путь до исходного шаблона</summary>
-        string sourcePath = @"D:\1\студенты\СПРБП\лаба\шаблон.txt";
+        string sourcePath = @"D:\2\\шаблон.txt";
         /// <summary>путь до выходного файла</summary>
-        string distPath = @"D:\1\студенты\СПРБП\лаба\result.pdf";
+        string distPath = @"D:\2\result.pdf";
         /// <summary>список шаблонных строк в тексте для форматирования</summary>
         string[] templateStringList =
         {
@@ -146,18 +146,27 @@ namespace Zadacha2
                             //CODEPART 2.4 Вставка ссылки на следующий рисунок
                             case 3://"[*ссылка на следующий рисунок*]"
                                 {
+                                    //заменяем текст на следующий номер рисунка
+                                    string replaceString = _sectionNumber.ToString() + "." + (_pictureNumber + 1).ToString();
+                                    textParagraph = textParagraph.Replace(templateStringList[i], replaceString);
                                 }
                                 break;
-                            //CODEPART 2.5 Вставка ссылки на предыдущий рисунок
+                            //CODEPART 2.5 Вставка перекрестной ссылки на предыдущий рисунок
                             case 4://"[*ссылка на таблицу*]
                                 {
+                                    //заменяем текст на текущий номер рисунка
+                                    string replaceString = _sectionNumber.ToString() + "." + _pictureNumber.ToString();
+                                    textParagraph = textParagraph.Replace(templateStringList[i], replaceString);
                                 }
                                 break;
                             //CODEPART 2.6 Вставка ссылки на таблицу
                             case 5://"[*ссылка на таблицу*]"
                                 {
+                                    //заменяем текст на номер следующей таблицы
+                                    string replaceString = _sectionNumber.ToString() + "." + (_tableNumber + 1).ToString();
+                                    textParagraph = textParagraph.Replace(templateStringList[i], replaceString);
                                 }
-                                break;
+                                break; 
                             //CODEPART 2.7 Вставка таблицы из файла
                             case 6://"[*таблица "
                                 {
