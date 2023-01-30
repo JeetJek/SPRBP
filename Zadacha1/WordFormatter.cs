@@ -561,12 +561,13 @@ namespace Zadacha1
             foreach (Paragraph paragraph in document.Paragraphs)
             {
                 //внутри параграфа обходим все закладки
-                foreach (Bookmark bookmark in paragraph.Range.Bookmarks)
+                for (int i = 1; i <= paragraph.Range.Bookmarks.Count; i++)
                 {
+                    Bookmark bookmark = paragraph.Range.Bookmarks[i];
                     //если нашли нужную закладку с номером
                     for (int j = 0; j < listBookMarkes.Length; j++)
                     {
-                        if (bookmark.Name.StartsWith(listBookMarkes[j]))
+                        if (bookmark.Name.StartsWith(listBookMarkes[j])&& !bookmark.Name.Contains("Replaced"))
                         {
                             string replaceString = "";
                             //определяем номер
@@ -605,13 +606,14 @@ namespace Zadacha1
                             if (replaceString != "")
                             {
                                 //вставляем номер в текст закладки
-                                string bookMarkName = bookmark.Name;
+                                string bookMarkName = bookmark.Name;// +"Replaced";
                                 Microsoft.Office.Interop.Word.Range range = bookmark.Range;
                                 bookmark.Range.Text = replaceString;
                                 //так как закладка после изменения текста затирается
                                 //создаем ее заново, но в новом диапазоне
                                 range.End = range.Start + replaceString.Length;
                                 document.Bookmarks.Add(bookMarkName, range);
+                                break;
                             }
                         }
                     }
