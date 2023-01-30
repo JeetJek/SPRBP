@@ -9,12 +9,12 @@ namespace Zadacha1
 {
     internal class WordFormatter
     {
-        public WordFormatter(string sourcePath,string distPath)
+        public WordFormatter(string sourcePath, string distPath)
         {
-            this.sourcePath= sourcePath;
+            this.sourcePath = sourcePath;
             this.distPath = distPath;
         }
-        public WordFormatter(){}
+        public WordFormatter() { }
         //определение параметров класса
         /// <summary>текущий номер раздела в тексте</summary>
         int _sectionNumber = 0;
@@ -74,6 +74,21 @@ namespace Zadacha1
 
             //CODEPART 1 Сборка ранее определенного списка литературы
             //список уже определенных источников
+            List<string> localSourceList = new List<string>();
+            //проверяем есть ли уже список определенных источников
+            if (document.Bookmarks.Exists("_literature"))
+            {
+                //заполняем список истоников тем, что уже есть
+                var paragraphs = document.Bookmarks["_literature"].Range.Paragraphs;
+                for (int i = 1; i <= paragraphs.Count; i++)
+                {
+                    //при этом исключаем номер источника (число точка пробел) и перенос каретки (\r)
+                    localSourceList.Add(paragraphs[i].Range.Text
+                    .Replace(i.ToString() + ". ", "").Replace("\r", ""));
+                }
+            }
+            //обнуляем номер текущего истопника
+            _sourceNumber = 0;
 
             //CODEPART 2 Определение параметров уже определенных закладок
             //делаем скрытые закладки видимыми
@@ -318,36 +333,36 @@ namespace Zadacha1
                             //CODEPART 3.5 Вставка таблицы из файла
                             case 6://"[*таблица "
                                 {
-                                //по формату мы задаем, что у нас есть шаблоная строка
-                                //[*таблица XXXXX*] где XXXXX - имя файла csv с таблицей
-                                //поэтому эту строку мы должны извлечь
-                                //при этому убираем ненужные части шаблонной строки
-                                string csvPath = paragraph.Range.Text.Replace(templateStringList[i], "")
-                                .Replace("*", "")
-                                .Replace("\r", "")
-                                .Replace("]", "");
-                                //файл должен лежать рядом с исходным документом
-                                //поэтому определим полный путь (извлекаем путь до директории текущего документа)
-                                csvPath = new System.IO.FileInfo(sourcePath).DirectoryName + "\\" + csvPath;
-                                //выделяем место вставки таблицы, сразу убираем желтое выделение
-                                var range = paragraph.Range;
-                                paragraph.Range.HighlightColorIndex = 0;
-                                //считываем все строки из csv файла - строки таблицы
-                                string[] listRows = System.IO.File.ReadAllLines(csvPath, Encoding.UTF8);
-                                //по разделителю разделяем строку таблицы на ячейки
-                                string[] listTitle = listRows[0].Split(";,".ToCharArray(),
-                                StringSplitOptions.RemoveEmptyEntries);
-                                //теперь у нас есть количество строк и столбцов, поэтому в текущую позицию вставляем таблицу
-                                var wordTable = document.Tables.Add(range, listRows.Length, listTitle.Length);
-                                //вставляем заголовки таблицы
-                                for (var k = 0; k < listTitle.Length; k++)
-                                {
+                                    //по формату мы задаем, что у нас есть шаблоная строка
+                                    //[*таблица XXXXX*] где XXXXX - имя файла csv с таблицей
+                                    //поэтому эту строку мы должны извлечь
+                                    //при этому убираем ненужные части шаблонной строки
+                                    string csvPath = paragraph.Range.Text.Replace(templateStringList[i], "")
+                                    .Replace("*", "")
+                                    .Replace("\r", "")
+                                    .Replace("]", "");
+                                    //файл должен лежать рядом с исходным документом
+                                    //поэтому определим полный путь (извлекаем путь до директории текущего документа)
+                                    csvPath = new System.IO.FileInfo(sourcePath).DirectoryName + "\\" + csvPath;
+                                    //выделяем место вставки таблицы, сразу убираем желтое выделение
+                                    var range = paragraph.Range;
+                                    paragraph.Range.HighlightColorIndex = 0;
+                                    //считываем все строки из csv файла - строки таблицы
+                                    string[] listRows = System.IO.File.ReadAllLines(csvPath, Encoding.UTF8);
+                                    //по разделителю разделяем строку таблицы на ячейки
+                                    string[] listTitle = listRows[0].Split(";,".ToCharArray(),
+                                    StringSplitOptions.RemoveEmptyEntries);
+                                    //теперь у нас есть количество строк и столбцов, поэтому в текущую позицию вставляем таблицу
+                                    var wordTable = document.Tables.Add(range, listRows.Length, listTitle.Length);
+                                    //вставляем заголовки таблицы
+                                    for (var k = 0; k < listTitle.Length; k++)
+                                    {
                                         wordTable.Cell(1, k + 1).Range.Text = listTitle[k].ToString();
-                                }
-                                //вставляем содержимое таблицы
-                                for (var j = 1; j < listRows.Length; j++)
-                                {
-                                    string[] listValues = listRows[j].Split(";,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                                    }
+                                    //вставляем содержимое таблицы
+                                    for (var j = 1; j < listRows.Length; j++)
+                                    {
+                                        string[] listValues = listRows[j].Split(";,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                                         for (var k = 0; k < listValues.Length; k++)
                                         {
                                             wordTable.Cell(j + 1, k + 1).Range.Text = listValues[k].ToString();
@@ -383,7 +398,101 @@ namespace Zadacha1
                 }
 
                 //CODEPART 3.8 Сбор внутритекстовых ссылок на литературу
-
+                string text = paragraph.Range.Text;
+                //если есть открывающая скобка
+                if (text.Contains("["))
+                {
+                    //посимвольно проходим весь абзац
+                    for (int j = 0; j < text.Length - 1; j++)
+                    {
+                        //если нашли открывающую скобку без последующего символа *
+                        if (text[j] == '[' && text[j + 1] != '*')
+                        {
+                            //то начинаем искать закрывающую скобку
+                            int startIndex = j;
+                            int endIndex = startIndex + 1;
+                            while (endIndex < text.Length && text[endIndex] != ']')
+                            {
+                                endIndex++;
+                            }
+                            string sourceName = "";
+                            //если нашли закрывающую скобку (а не до конца абзаца)
+                            if (text[endIndex] == ']')
+                            {
+                                //собираем текст между скобками (включая)
+                                for (int k = startIndex; k <= endIndex; k++)
+                                {
+                                    sourceName += text[k];
+                                }
+                                int result = 0;
+                                int index = 0;
+                                //уберем ограничивающие скобки и проверим, внутри ли просто цифра
+                                if (!int.TryParse(sourceName.TrimStart('[').TrimEnd(']'), out result))
+                                {
+                                    //если не удалость перевести строку в цифру
+                                    //то значит это полный текст ссылки
+                                    //тогда, если в списке литературы нет еще такой ссылки
+                                    if (!sourceList.Contains(sourceName))
+                                    {
+                                        //добавляем в список, увеличиваем номер текущей ссылки
+                                        sourceList.Add(sourceName);
+                                        _sourceNumber++;
+                                        index = _sourceNumber;
+                                    }
+                                    else
+                                    {
+                                        //если же уже источник есть в списке
+                                        for (int k = 0; k < sourceList.Count; k++)
+                                        {
+                                            //то находим его номер
+                                            if (sourceList[k].Contains(sourceName))
+                                            {
+                                                index = k + 1;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //если же внутри цифра, значит это уже определенный источник
+                                    //в закладке списка литературы
+                                    int indexInLocal = int.Parse(sourceName
+                                    .TrimStart('[').TrimEnd(']'));
+                                    //если в новом списке литературы еще этого источника нет
+                                    if (!sourceList.Contains(localSourceList[indexInLocal - 1]))
+                                    {
+                                        //добавляем в список, увеличиваем номер текущей ссылки
+                                        sourceList.Add(localSourceList[indexInLocal - 1]);
+                                        _sourceNumber++;
+                                        index = _sourceNumber;
+                                    }
+                                    else
+                                    {
+                                        //если же уже источник есть в списке
+                                        for (int k = 0; k < sourceList.Count; k++)
+                                        {
+                                            //то находим его номер
+                                            if (sourceList[k].Contains(
+                                            localSourceList[indexInLocal - 1]))
+                                            {
+                                                index = k + 1;
+                                            }
+                                        }
+                                    }
+                                }
+                                //ограничиваем номер ссылки в квадратные скобки
+                                string replaceString = "[" + index.ToString() + "]";
+                                //заменяем полнотекстовую ссылку на номер
+                                paragraph.Range.Find.Execute(sourceName,
+                                ref missing, ref missing, ref missing,
+                                ref missing, ref missing, ref missing,
+                                0, ref missing, replaceString, 2);
+                                //двигаемся дальше по абзацу
+                                j = endIndex;
+                            }
+                        }
+                    }
+                }
                 //CODEPART 3.9 Стандартное форматирование абзаца
                 //если нужно абзац форматировать как обычный текст
                 if (isStandartFormat)
@@ -407,7 +516,26 @@ namespace Zadacha1
             }
 
             //CODEPART 4 Формирование списка литературы
-
+            if (document.Bookmarks.Exists("_literature"))
+            {
+                //запоминаем позицию закладки
+                Microsoft.Office.Interop.Word.Range range = document.Bookmarks["_literature"].Range;
+                //собираем список литературы в многострочную строку
+                string replaceString = "";
+                for (int j = 0; j < sourceList.Count; j++)
+                {
+                    replaceString += (j + 1).ToString() + ". "
+                    + sourceList[j].TrimStart('[').TrimEnd(']') + "\r";
+                }
+                //TODO (задание на 5) если полнотекстовая ссылка содержит url (начинается с http), то вставить дополнение
+                //Название страницы [Электронный источник] // Название сайта, текущий год. Режим доступа: URL (дата обращения: текущая дата).
+                //вставляем список
+                document.Bookmarks["_literature"].Range.Text = replaceString;
+                //так как закладка после изменения текста затирается
+                //создаем ее заново, но в новом диапазоне
+                range.End = range.Start + replaceString.Length;
+                document.Bookmarks.Add("_literature", range);
+            }
             //CODEPART 5 Заполнение закладок номера таблиц, рисунков и разделов
             //осталось переопределить номера таблиц, рисунков и разделов
             //снова обходим все параграфы
