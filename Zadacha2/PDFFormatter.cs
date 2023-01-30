@@ -108,14 +108,39 @@ namespace Zadacha2
                                     //1.1.1.1 подпункт
                                 }
                                 break;
-                            //CODEPART 2.1 Редактирование подрисуночной подписи
+                            //CODEPART 2.2 Редактирование подрисуночной подписи
                             case 1://"[*номер рисунка*]"
                                 {
+                                    //увеличиваем номер рисунка
+                                    _pictureNumber++;
+                                    //составляем номер рисунка из номера раздела и номера рисунка в разделе
+                                    string replaceString = "Рисунок " + _sectionNumber.ToString()
+                                    + "." + _pictureNumber.ToString() + " –";
+                                    //заменяем вхождение ключевого слова на номер
+                                    textParagraph = textParagraph.Replace(templateStringList[i], replaceString);
+                                    //вставляем абзац текста
+                                    var iparagraph = new Paragraph(textParagraph,
+                                    new Font(baseFont, fontSizeText, Font.ITALIC));
+                                    iparagraph.SpacingAfter = 12f;
+                                    iparagraph.Alignment = Element.ALIGN_CENTER;
+                                    document.Add(iparagraph);
+                                    isSetParagraph = true;
                                 }
                                 break;
                             //CODEPART 2.3 Редактирование заголовка таблицы
                             case 2://"[*номер таблицы*]"
                                 {
+                                    _tableNumber++;//номер таблицы состоит из номера раздела и номера таблицы
+                                    string replaceString = "Таблица " + _sectionNumber.ToString()
+                                    + "." + _tableNumber.ToString() + " –";
+                                    textParagraph = textParagraph.Replace(templateStringList[i], replaceString);
+                                    var iparagraph = new Paragraph(textParagraph,
+                                    new Font(baseFont, fontSizeText, Font.ITALIC));
+                                    iparagraph.SpacingAfter = 12f;
+                                    iparagraph.Alignment = Element.ALIGN_LEFT;
+                                    document.Add(iparagraph);
+                                    //абзац уже вставлен
+                                    isSetParagraph = true;
                                 }
                                 break;
                             //CODEPART 2.4 Вставка ссылки на следующий рисунок
